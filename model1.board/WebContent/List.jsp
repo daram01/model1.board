@@ -34,7 +34,7 @@
 	<jsp:include page="./common/Link.jsp"></jsp:include>
 	<h2>목록 보기(List)</h2>
 	<!-- 검색폼 -->
-	<form method="get"> URL에 입력된 정보값을 쿼리스트링 형태로 서버로 보낸다는 것. action값이 없다는 것이 특징. 
+	<form method="get">
 	<table border="1" width="90%">
 	<tr>
 		<td align="center">
@@ -48,7 +48,6 @@
 	</tr>
 	</table>
 	</form>
-	검색어 입력한 것들 데이터베이스로 전달하는 것
 	
 	<!-- 게시물 목록 테이블 (표) -->
 	<table border="1" width="90%">
