@@ -6,6 +6,8 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
+import org.apache.tomcat.util.net.ApplicationBufferHandler;
+
 import common.JDBConnect;
 
 public class BoardDAO extends JDBConnect{
@@ -46,15 +48,15 @@ public class BoardDAO extends JDBConnect{
 		// searchWord의 value값이 null이 아니면, 즉 사용자가 검색어를 입력하고 검색하기 버튼을 눌렀다면.
 			query += " where " + map.get("searchField") + " "
 					+ " like '%" + map.get("searchWord") + "%' ";
+		}
 			// query = where title like '%사용자가 입력한 검색어%' 또는
 			// query = where content like '%사용자가 입력한 검색어%'
-			query += "order by num desc"; // 최근글이 가장 위에 있게 만들어준다.
+			query += " order by num desc "; // 최근글이 가장 위에 있게 만들어준다.
 			// query = order by num desc -> 내림차순
 			// 결과적으로 query문에는 
 			// select * from board
 			// where title like '%안녕%'
 			// order by num desc; 가 작성되어있는 것이다.
-		}
 		
 		try {
 			stmt = con.createStatement(); 
@@ -115,34 +117,32 @@ public class BoardDAO extends JDBConnect{
 	
 	// 게시물을 조회하기 위한 메서드
 	public BoardDTO selectView(String num) {
-		BoardDTO dto = new BoardDTO();
-		
-		String query = "select b.*, m.name "
-					+ " from member m inner join board b "
-					+ " on m.id=b.id "
-					+ " where num=?";
-		
-		try {
-			psmt = con.prepareStatement(query);
-			psmt.setString(1, num);
-			rs = psmt.executeQuery();
-			
-			if(rs.next()) {
-				dto.setNum(rs.getString("1")); 
-				dto.setTitle(rs.getString("2"));
-				dto.setContent(rs.getString("content"));
-				dto.setPostdate(rs.getDate("postdate"));
-				dto.setId(rs.getString("id"));
-				dto.setVisitcount(rs.getString("6"));
-				dto.setName(rs.getString("name"));
-			}
-		}
-		catch(Exception e) {
-			System.out.println("게시물 상세보기 중 예외 발생");
-			e.printStackTrace();
-		}
-		return dto;
-	}
+	      String query = "select b.*, m.name "+
+	            " from member m inner join board b " +
+	            " on m.id = b.id " +
+	            " where num = ?";
+	      BoardDTO dto = new BoardDTO();
+	      try {
+	         psmt = con.prepareStatement(query);
+	         psmt.setString(1, num);
+	         
+	         rs = psmt.executeQuery();
+	         if(rs.next()) {
+	            dto.setNum(rs.getString(1));
+	            dto.setTitle(rs.getString(2));
+	            dto.setContent(rs.getString("content"));
+	            dto.setPostdate(rs.getDate("postdate"));
+	            dto.setId(rs.getString("id"));
+	            dto.setVisitcount(rs.getString(6));
+	            dto.setName(rs.getString("name"));
+	            
+	         }
+	      }catch(Exception e) {
+	         System.out.println("게시물 조회 중 예외 발생");
+	         e.printStackTrace();
+	      }
+	      return dto;
+	   }
 	
 	
 	// 조회수 1 증가 메서드
@@ -154,12 +154,65 @@ public class BoardDAO extends JDBConnect{
 		try {
 			psmt = con.prepareStatement(query);
 			psmt.setString(1, num);
-			psmt.executeQuery();
+			psmt.executeUpdate();
 		}
 		catch(Exception e) {
 			System.out.println("게시물 조회수 증가 중 예외 발생");
 			e.printStackTrace();
 		}
 	}
-}
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+	
+	
+    public int updateEdit(BoardDTO dto) { 
+        int result = 0;
+        
+        try {
+            // 쿼리문 템플릿 
+            String query = "UPDATE board SET "
+                         + " title=?, content=? "
+                         + " WHERE num=?";
+            
+            // 쿼리문 완성
+            psmt = con.prepareStatement(query);
+            psmt.setString(1, dto.getTitle());
+            psmt.setString(2, dto.getContent());
+            psmt.setString(3, dto.getNum());
+            
+            // 쿼리문 실행 
+            result = psmt.executeUpdate();
+        } 
+        catch (Exception e) {
+            System.out.println("게시물 수정 중 예외 발생");
+            e.printStackTrace();
+        }
+        
+        return result; // 결과 반환 
+    }
+    
+    
+    
+    public int deletePost(BoardDTO dto) {
+    	int result = 0;
+    	
+        try {
+            // 쿼리문 템플릿 
+            String query = "delete from board where num=?";
+            
+            // 쿼리문 완성
+            psmt = con.prepareStatement(query);
+            psmt.setString(1, dto.getNum());
+            
+            // 쿼리문 실행 
+            result = psmt.executeUpdate();
+        } 
+        catch (Exception e) {
+            System.out.println("게시물 삭제 중 예외 발생");
+            e.printStackTrace();
+        }
+    	
+    	return result;
+    }
+	
+	
+	
+}  // main 끝                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
